@@ -87,7 +87,7 @@ static void radio_frame_mainunit_parse_learn(rx_format *rx_frame)
 
 static void radio_frame_mainunit_parse_valve(rx_format *rx_frame)
 {
-    uint32_t value = rx_frame->rx_data[2];
+    uint8_t value = rx_frame->rx_data[2];
     switch(value)
     {
     case 0://open
