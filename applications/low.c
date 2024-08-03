@@ -94,6 +94,8 @@ void user_notify(rt_uint8_t event, rt_uint8_t mode, void *data)
     {
         //SYSTICK
         rt_hw_systick_deinit();
+        //RNG
+        rng_hw_deinit();
         //RF
         RF_Sleep();
         //PIN
@@ -107,6 +109,8 @@ void user_notify(rt_uint8_t event, rt_uint8_t mode, void *data)
     {
         //DEBUG UART
         Debug_Init();
+        //RNG
+        rng_hw_init();
         //RF Switch
         RF_Switch_Init();
         //RF

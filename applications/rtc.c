@@ -10,6 +10,7 @@
 
 rt_sem_t RTC_IRQ_Sem;
 RTC_HandleTypeDef rtc_handle;
+RNG_HandleTypeDef rng_handle;
 rt_thread_t rtc_scan_t = RT_NULL;
 
 uint8_t RTC_Counter;
@@ -17,6 +18,14 @@ uint8_t heart_count;
 
 struct rt_lptimer heart_timer;
 struct rt_lptimer once_heart_timer;
+
+uint32_t random_second_get(uint32_t min,uint32_t max)
+{
+    uint32_t value, second = 0;
+    HAL_RNG_GenerateRandomNumber(&rng_handle, &value);
+    second = value % (max - min + 1) + min;
+    return second;
+}
 
 void heart_timer_callback(void *parameter)
 {
@@ -43,14 +52,14 @@ void Stop_Heart_Timer(void)
     rt_lptimer_stop(&heart_timer);
 }
 
-void Period_Heart(void)
+void period_heart_start(void)
 {
-    LOG_I("Period_Heart\r\n");
-    heart_count = 0;
-    RF_HeartWithMain();
+    uint32_t ramdom_sec = random_second_get(30,270) * 1000;
+    rt_lptimer_control(&once_heart_timer, RT_TIMER_CTRL_SET_TIME, &ramdom_sec);
+    rt_lptimer_start(&once_heart_timer);
 }
 
-void RTC_Timer_Entry(void *parameter)
+void rtc_scan_entry(void *parameter)
 {
     while(1)
     {
@@ -65,14 +74,14 @@ void RTC_Timer_Entry(void *parameter)
             else
             {
                 RTC_Counter=0;
-                Period_Heart();
+                period_heart_start();
             }
             rt_pm_sleep_release(PM_RTC_ID, PM_SLEEP_MODE_NONE);
         }
     }
 }
 
-void HW_RTC_Init(void)
+void rtc_hw_init(void)
 {
     /* USER CODE BEGIN RTC_Init 0 */
 
@@ -185,15 +194,34 @@ void once_heart_timer_callback(void *parameter)
     RF_HeartWithMain();
 }
 
+void rng_hw_init(void)
+{
+    rng_handle.Instance = RNG;
+    if (HAL_RNG_Init(&rng_handle) != HAL_OK)
+    {
+        Error_Handler();
+    }
+}
+
+void rng_hw_deinit(void)
+{
+    rng_handle.Instance = RNG;
+    if (HAL_RNG_DeInit(&rng_handle) != HAL_OK)
+    {
+        Error_Handler();
+    }
+}
+
 void rtc_init(void)
 {
-    HW_RTC_Init();
+    rng_hw_init();
+    rtc_hw_init();
     RTC_IRQ_Sem = rt_sem_create("RTC_IRQ", 0, RT_IPC_FLAG_FIFO);
 
     rt_lptimer_init(&heart_timer, "heart_timer", heart_timer_callback, RT_NULL,5*60*1000, RT_TIMER_FLAG_ONE_SHOT | RT_TIMER_FLAG_SOFT_TIMER);
     rt_lptimer_init(&once_heart_timer, "once_heart_timer", once_heart_timer_callback, RT_NULL,30*1000, RT_TIMER_FLAG_ONE_SHOT | RT_TIMER_FLAG_SOFT_TIMER);
     rt_lptimer_start(&once_heart_timer);
 
-    rtc_scan_t = rt_thread_create("RTC_Scan", RTC_Timer_Entry, RT_NULL, 2048, 10, 10);
+    rtc_scan_t = rt_thread_create("rtc_scan", rtc_scan_entry, RT_NULL, 2048, 10, 10);
     rt_thread_startup(rtc_scan_t);
 }
