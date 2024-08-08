@@ -42,21 +42,25 @@ void heart_timer_callback(void *parameter)
 
 void Start_Heart_Timer(void)
 {
-    LOG_I("Start Watting Heart Response\r\n");
+    uint32_t ramdom_sec = random_second_get(30,270) * 1000;
+    rt_lptimer_control(&heart_timer, RT_TIMER_CTRL_SET_TIME, &ramdom_sec);
     rt_lptimer_start(&heart_timer);
 }
 
 void Stop_Heart_Timer(void)
 {
-    LOG_D("Stop_Heart_Timer\r\n");
     rt_lptimer_stop(&heart_timer);
 }
 
-void period_heart_start(void)
+void heart_period_start(void)
 {
-    uint32_t ramdom_sec = random_second_get(30,270) * 1000;
-    rt_lptimer_control(&heart_timer, RT_TIMER_CTRL_SET_TIME, &ramdom_sec);
-    rt_lptimer_start(&heart_timer);
+    heart_count = 0;
+    RF_HeartWithMain();
+}
+
+void once_heart_timer_callback(void *parameter)
+{
+    heart_period_start();
 }
 
 void rtc_scan_entry(void *parameter)
@@ -74,7 +78,7 @@ void rtc_scan_entry(void *parameter)
             else
             {
                 RTC_Counter=0;
-                period_heart_start();
+                heart_period_start();
             }
             rt_pm_sleep_release(PM_RTC_ID, PM_SLEEP_MODE_NONE);
         }
@@ -188,12 +192,6 @@ void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc)
     }
 }
 
-void once_heart_timer_callback(void *parameter)
-{
-    heart_count = 0;
-    RF_HeartWithMain();
-}
-
 void rng_hw_init(void)
 {
     rng_handle.Instance = RNG;
@@ -219,7 +217,7 @@ void rtc_init(void)
     RTC_IRQ_Sem = rt_sem_create("RTC_IRQ", 0, RT_IPC_FLAG_FIFO);
 
     rt_lptimer_init(&heart_timer, "heart_timer", heart_timer_callback, RT_NULL,5*60*1000, RT_TIMER_FLAG_ONE_SHOT | RT_TIMER_FLAG_SOFT_TIMER);
-    rt_lptimer_init(&once_heart_timer, "once_heart_timer", once_heart_timer_callback, RT_NULL,30*1000, RT_TIMER_FLAG_ONE_SHOT | RT_TIMER_FLAG_SOFT_TIMER);
+    rt_lptimer_init(&once_heart_timer, "once_heart_timer", once_heart_timer_callback, RT_NULL,60*1000, RT_TIMER_FLAG_ONE_SHOT | RT_TIMER_FLAG_SOFT_TIMER);
     rt_lptimer_start(&once_heart_timer);
 
     rtc_scan_t = rt_thread_create("rtc_scan", rtc_scan_entry, RT_NULL, 2048, 10, 10);
