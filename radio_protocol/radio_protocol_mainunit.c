@@ -104,10 +104,11 @@ static void radio_frame_mainunit_parse_valve(rx_format *rx_frame)
         break;
     }
 
-    if(rx_frame->rssi >= -100 && rx_frame->snr >= 0)
+    if(rx_frame->rssi >= -100 && rx_frame->snr >= -6)
     {
         Beep_Recv();
     }
+
     Heart_Refresh();
 }
 

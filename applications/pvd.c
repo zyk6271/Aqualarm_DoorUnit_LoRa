@@ -42,10 +42,11 @@ void PVD_PVM_IRQHandler(void)
         break;
     case 3://10
         Detect_Level = 4;
-        Warning_Active_Num(3);
         Bat_Level = 2;
+        Warning_Active_Num(3);
         break;
-    default:break;
+    default:
+        break;
     }
     HAL_PWR_ConfigPVD(&sConfigPVD);
     LOG_I("PVD level change to %d\n",Detect_Level);
