@@ -118,15 +118,15 @@ void radio_mainunit_rssi_set(int value)
     {
         radio_mainunit_rssi = 0;
     }
-    else if(value < -65 && value >= -90)
+    else if(value < -65 && value >= -84)
     {
         radio_mainunit_rssi = 1;
     }
-    else if(value < -90 && value >= -100)
+    else if(value < -84 && value >= -94)
     {
         radio_mainunit_rssi = 2;
     }
-    else if(value < -100)
+    else if(value < -94)
     {
         radio_mainunit_rssi = 3;
     }
@@ -167,7 +167,7 @@ void radio_mainunit_command_send(tx_format *tx_frame)
     unsigned short send_len = 0;
 
     send_len = set_lora_tx_byte(send_len,0xEF);
-    send_len = set_lora_tx_byte(send_len,(NETID_TEST_ENV << 4) | NETWORK_VERSION);
+    send_len = set_lora_tx_byte(send_len,(NET_REGION_SELECT << 4) | NETWORK_VERSION);
     send_len = set_lora_tx_byte(send_len,(tx_frame->msg_ack << 7) | (DEVICE_TYPE_DOORUNIT << 3) | tx_frame->msg_type);
     send_len = set_lora_tx_word(send_len,tx_frame->dest_addr);
     send_len = set_lora_tx_word(send_len,tx_frame->source_addr);
