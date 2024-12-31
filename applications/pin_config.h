@@ -37,4 +37,9 @@
 #define KEY_ON_PIN                      8
 #define KEY_DELAY_PIN                   4
 
+/*
+ * FACTORY
+ */
+#define FACTORY_TP1_PIN                 24
+
 #endif /* APPLICATIONS_PIN_CONFIG_H_ */

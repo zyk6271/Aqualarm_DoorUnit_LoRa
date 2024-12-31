@@ -82,6 +82,31 @@ void Led_Beep_Powerup(void)
     }
 }
 
+uint8_t led_factory_test(void)
+{
+    rt_pin_mode(FACTORY_TP1_PIN,PIN_MODE_INPUT_PULLUP);
+    if(rt_pin_read(FACTORY_TP1_PIN) == 0)
+    {
+        rt_pm_module_delay_sleep(PM_LED_ID,20000);
+        rt_pin_write(LED_BAT_GREEN_PIN, 0);
+        rt_pin_write(LED_ON_RED_PIN, 0);
+        rt_pin_write(LED_ON_GREEN_PIN, 0);
+        rt_pin_write(LED_WARN_RED_PIN, 0);
+        rt_pin_write(LED_WARN_GREEN_PIN, 0);
+        rt_pin_write(LED_OFF_RED_PIN, 0);
+        rt_pin_write(LED_OFF_GREEN_PIN, 0);
+        rt_pin_write(LED_DELAY_RED_PIN, 0);
+        rt_pin_write(LED_DELAY_GREEN_PIN, 0);
+        rt_pin_write(LED_INTENSITY_GREEN_PIN, 0);
+        agile_led_start(power_beep);
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
 void led_init(void)
 {
     rt_lptimer_init(&alarm_timer, "alarm_timer", alarm_timer_callback, RT_NULL, 3000, RT_TIMER_FLAG_ONE_SHOT | RT_TIMER_FLAG_SOFT_TIMER);
@@ -115,7 +140,10 @@ void led_init(void)
     bat_high_led = agile_led_create(LED_WARN_GREEN_PIN, 0, "0,400,200,600,200,1", 1);
     bat_ultra_led = agile_led_create(LED_ON_GREEN_PIN, 0, "0,400,200,600,200,1", 1);
 
-    Led_Beep_Powerup();
+    if(led_factory_test() == 0)
+    {
+        Led_Beep_Powerup();
+    }
 }
 
 void Led_KeyOn(void)
