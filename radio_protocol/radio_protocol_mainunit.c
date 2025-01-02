@@ -122,11 +122,11 @@ void radio_mainunit_rssi_set(int value)
     {
         radio_mainunit_rssi = 1;
     }
-    else if(value < -84 && value >= -94)
+    else if(value < -84 && value >= -91)
     {
         radio_mainunit_rssi = 2;
     }
-    else if(value < -94)
+    else if(value < -91)
     {
         radio_mainunit_rssi = 3;
     }
